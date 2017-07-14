@@ -58,8 +58,7 @@ public class PlayerInteraction implements Listener, CommandExecutor {
     @EventHandler
     public void onPlayerPortal(PlayerPortalEvent event) {
         if (event.isCancelled()) return;
-        event.setCancelled(true);
-        if (portals.manages(blocksAround(event.getFrom().getBlock()))) event.setCancelled(true);
+        if (portals.manages(blocksAround(event.getFrom().getBlock()), event.getFrom().getBlock())) event.setCancelled(true);
     }
 
     @EventHandler
@@ -75,12 +74,12 @@ public class PlayerInteraction implements Listener, CommandExecutor {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block b = event.getBlock();
-        if (portals.manages(blocksAround(b))) event.setCancelled(true);
+        if (portals.manages(blocksAround(b), b)) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockExplode(EntityExplodeEvent event) {
-        if (portals.manages(event.blockList())) event.setCancelled(true);
+        if (portals.manages(event.blockList(), event.getLocation().getBlock())) event.setCancelled(true);
     }
 
     private boolean mayPerform(Player player, String permission) {

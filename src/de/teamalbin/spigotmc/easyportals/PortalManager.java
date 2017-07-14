@@ -80,6 +80,7 @@ public class PortalManager {
             if (pbs == null) throw new InvalidConfigurationException("Could not rebuild portal '" + pname + "' from configuration!");
             Portal p = new Portal(ploc, pname, isEW, cp.getBoolean("flipped"), cp.getString("target"), null, pbs.portalBlocks);
             portals.put(pname, p);
+            nms.massSetBlockType(pbs.portalBlocks, (byte)(isEW ? 0 : 2), Material.PORTAL);
         }
         // after all portals are loaded, initialize the links
         for (Portal p : portals.values()) {
@@ -206,10 +207,16 @@ public class PortalManager {
         return false;
     }
 
-    public boolean manages(List<Block> blocks) {
-        List<Block> check = blocks.stream().filter((b) -> b.getType() != this.portalBlockType).collect(Collectors.toList());
+    /**
+     * Checks whether any of a list of blocks is managed by a portal. For performance reasons,
+     * this only checks near a center block (usually an event location) so it can rule out far away portals quickly.
+     */
+    public boolean manages(List<Block> blocks, Block near) {
+        List<Block> check = blocks.stream().filter((b) -> b.getType() == this.portalBlockType).collect(Collectors.toList());
         if (check.isEmpty()) return false;
         for (Portal p : this.portals.values()) {
+            if (p.getLocation().getWorld() != near.getLocation().getWorld()) continue;
+            if (p.getLocation().distance(near.getLocation()) > PROTECTION_RADIUS) continue;
             for (Block b : check) {
                 if (p.getLocation().getWorld() != b.getLocation().getWorld()) continue;
                 if (p.getLocation().distance(b.getLocation()) <= PROTECTION_RADIUS && p.getBlocks().contains(b)) return true;
