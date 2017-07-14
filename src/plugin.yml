@@ -1,0 +1,16 @@
+name: EasyPortals
+main: de.teamalbin.spigotmc.easyportals.EasyPortals
+version: 0.1.0
+author: 12foo
+description: A small, fast and convenient portals plugin.
+commands:
+  portal:
+    usage: |
+      /<command> create <name> (while standing near a new portal site) -- creates a new, unlinked portal.
+      /<command> list -- Shows all existing portals and where they link.
+      /<command> link <portal-1> <portal-2> -- Links two portals together. Removes previous links.
+                 <portal-2> may be "random" or "here" to create a random or point warp.
+      /<command> flip <portal> -- Flip the portal exit/walk-out direction.
+      /<command> unlink <portal> -- Breaks the link between the portal and its counterpart.
+      /<command> destroy <portal> -- Unlinks and removes a portal.
+    description: Creates and manages portals.
