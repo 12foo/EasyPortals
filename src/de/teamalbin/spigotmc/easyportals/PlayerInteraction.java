@@ -121,9 +121,17 @@ public class PlayerInteraction implements Listener, CommandExecutor {
                 return checkError(player, this.portals.linkPortals(player, strings[1], strings[2]));
             }
             break;
+            case "flip": if (mayPerform(player, "easyportals.build")) {
+                if (strings.length != 2) {
+                    player.sendMessage("Which portal do you want to flip? /portal unlink <name>");
+                    return true;
+                }
+                return checkError(player, this.portals.flipPortal(player, strings[1]));
+            }
+            break;
             case "unlink": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
-                    player.sendMessage("Which portal do you want to destroy? /portal unlink <name>");
+                    player.sendMessage("Which portal do you want to unlink? /portal unlink <name>");
                     return true;
                 }
                 return checkError(player, this.portals.unlinkPortal(player, strings[1]));

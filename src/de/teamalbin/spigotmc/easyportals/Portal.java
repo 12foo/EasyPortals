@@ -76,6 +76,10 @@ public class Portal {
         this.target = null;
     }
 
+    public void flip() {
+        this.flipped = !this.flipped;
+    }
+
     public void setLink(Player player, Portal link) {
         if (this.link != null) {
             this.link.unlink(player);
@@ -144,7 +148,8 @@ public class Portal {
             if (this.flipped) { exitDirection.multiply(-1); }
             if (Math.abs(exitDirection.getX()) > Math.abs(exitDirection.getZ())) exitDirection.setZ(0);
             else exitDirection.setX(0);
-            exitDirection.normalize().setY(0);
+            // multiply a little extra because ugh float rounding errors
+            exitDirection.normalize().setY(0).multiply(1.01);
 
             Block exit = this.link.location.clone().add(exitDirection).getBlock();
             if (!this.checkFree(exit)) {

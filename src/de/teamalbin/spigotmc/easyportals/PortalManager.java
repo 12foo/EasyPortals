@@ -269,6 +269,15 @@ public class PortalManager {
         return null;
     }
 
+    public PortalManagerError flipPortal(Player player, String pname) {
+        if (!this.portals.containsKey(pname)) return new PortalManagerError("Portal '" + pname + "' does not exist.");
+        Portal portal = portals.get(pname);
+        portal.flip();
+        player.sendMessage("Portal " + portal.niceName() + " -- walk-out direction flipped.");
+        try { saveConfig(); } catch (IOException ioex) { player.sendMessage(ChatColor.RED + "[!!!] Could not save portal configuration!"); }
+        return null;
+    }
+
     public PortalManagerError destroyPortal(Player player, String pname) {
         if (!this.portals.containsKey(pname)) return new PortalManagerError("Portal '" + pname + "' does not exist.");
         Portal portal = portals.get(pname);
