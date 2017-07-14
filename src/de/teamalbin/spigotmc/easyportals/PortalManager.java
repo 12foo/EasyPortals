@@ -254,11 +254,14 @@ public class PortalManager {
 
     public PortalManagerError linkPortals(Player player, String portal1, String portal2) {
         if (!this.portals.containsKey(portal1)) return new PortalManagerError("Portal '" + portal1 + "' does not exist.");
-        if (portal2.equals("random") && !this.portals.containsKey(portal2)) return new PortalManagerError("Portal '" + portal2 + "' does not exist.");
         Portal p1 = portals.get(portal1);
         if (portal2.equals("random")) {
-            p1.setRandom(player);
+            p1.makeRandom(player);
+        } else if (portal2.equals("here")) {
+            p1.makePoint(player, player.getLocation());
         } else {
+            // portal-to-portal link
+            if (!this.portals.containsKey(portal2)) return new PortalManagerError("Portal '" + portal2 + "' does not exist.");
             Portal p2 = portals.get(portal2);
             p1.setLink(player, p2);
         }

@@ -1,18 +1,21 @@
 package de.teamalbin.spigotmc.easyportals;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class Portal {
+    private static int randomRange = 6000;
+    private static int randomMaxTries = 8;
+
     private String name;
     private Location location;
     private boolean isEW;
@@ -79,6 +82,10 @@ public class Portal {
     }
 
     public void setLink(Player player, Portal link) {
+        if (this.getLocation().getWorld() != link.location.getWorld()) {
+            player.sendMessage(ChatColor.RED + "Error: " + ChatColor.RESET + "Can't use portals to link between different worlds.");
+            return;
+        }
         if (this.link != null) {
             this.link.unlink(player);
             link.unlink(player);
@@ -90,7 +97,7 @@ public class Portal {
         if (player != null) player.sendMessage("Portal " + this.niceName() + " linked to " + link.niceName() + ".");
     }
 
-    public void setRandom(Player player) {
+    public void makeRandom(Player player) {
         if (this.link != null) {
             this.unlink(player);
             this.link.unlink(player);
@@ -98,6 +105,24 @@ public class Portal {
         this.link = null;
         this.target = "random";
         if (player != null) player.sendMessage("Portal " + this.niceName() + " is now a random warp.");
+    }
+
+    private String pointToTarget(Location point) {
+        return point.getBlockX() + ", " + point.getBlockY() + ", " + point.getBlockZ();
+    }
+
+    public void makePoint(Player player, Location point) {
+        if (this.getLocation().getWorld() != point.getWorld()) {
+            player.sendMessage(ChatColor.RED + "Error: " + ChatColor.RESET + "Can't use portals to link between different worlds.");
+            return;
+        }
+        if (this.link != null) {
+            this.link.unlink(player);
+            this.unlink(player);
+        }
+        this.link = null;
+        this.target = "point:" + pointToTarget(point) + ":" + point.getPitch() + ":" + point.getYaw();
+        if (player != null) player.sendMessage("Portal " + this.niceName() + " now warps to fixed point (" + pointToTarget(point) + ").");
     }
 
     public List<Block> getBlocks() {
@@ -164,7 +189,40 @@ public class Portal {
             this.enableCooldown();
 
         } else if (tgt[0].equals("random")) {
-            // teleport to random place in the world
+            int tries = 0;
+            while (tries <= Portal.randomMaxTries) {
+                tries++;
+                int x = this.location.getBlockX() + ThreadLocalRandom.current().nextInt(-Portal.randomRange, Portal.randomRange);
+                int z = this.location.getBlockZ() + ThreadLocalRandom.current().nextInt(-Portal.randomRange, Portal.randomRange);
+                int y = player.getWorld().getHighestBlockYAt(x, z);
+                Block check = player.getWorld().getBlockAt(x, y-1, z);
+                if (check.getType() == Material.AIR || check.getType() == Material.WATER || check.getType() == Material.STATIONARY_WATER ||
+                        check.getType() == Material.STATIONARY_LAVA || check.getType() == Material.WEB || check.getType() == Material.LAVA ||
+                        check.getType() == Material.CACTUS || check.getType() == Material.ENDER_PORTAL || check.getType() == Material.PORTAL)
+                    continue;
+                player.teleport(check.getRelative(0, 2, 0).getLocation());
+                player.sendMessage("Welcome to the wilds.");
+                this.enableCooldown();
+                return;
+            }
+            player.setVelocity(player.getLocation().getDirection().clone().normalize().multiply(-0.7).setY(0));
+            player.sendMessage("It seems there's no good place for you right now. Try again in a few seconds.");
+            this.enableCooldown();
+
+        } else if (tgt[0].equals("point")) {
+            try {
+                List<Double> vec = Arrays.stream(tgt[1].split(",")).map(s -> Double.parseDouble(s)).collect(Collectors.toList());
+                Float pitch = Float.parseFloat(tgt[2]);
+                Float yaw = Float.parseFloat(tgt[3]);
+                Location loc = new Location(this.location.getWorld(), vec.get(0), vec.get(1), vec.get(2));
+                loc.setYaw(yaw);
+                loc.setPitch(pitch);
+                player.teleport(loc);
+                this.enableCooldown();
+
+            } catch (NumberFormatException nfex) {
+                player.sendMessage("Something about this portal feels wrong... " + ChatColor.DARK_GRAY +  "(misconfigured portal)");
+            }
         }
     }
 }
