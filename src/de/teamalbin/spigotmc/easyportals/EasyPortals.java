@@ -44,9 +44,11 @@ public class EasyPortals extends JavaPlugin {
         } catch (IOException ioex) {
             getLogger().severe("Could not load portal configuration. (" + ioex.getMessage() + ")");
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         } catch (InvalidConfigurationException icex) {
             getLogger().severe("Could not parse portal configuration. (" + icex.getMessage() + ")");
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         this.interaction = new PlayerInteraction(this.portals);

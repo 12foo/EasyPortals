@@ -13,8 +13,6 @@ import java.time.Instant;
 import java.util.List;
 
 public class Portal {
-    private static Sound teleportSound = Sound.ENTITY_ENDERMEN_TELEPORT;
-
     private String name;
     private Location location;
     private boolean isEW;
@@ -163,8 +161,6 @@ public class Portal {
             tport.setDirection(exitDirection);
             player.teleport(tport);
             player.setVelocity(tport.getDirection().normalize().multiply(0.7));
-            this.location.getWorld().playSound(this.location, Portal.teleportSound, 0.5f, 1.0f);
-            this.link.location.getWorld().playSound(this.link.location, Portal.teleportSound, 0.5f, 1.0f);
             this.enableCooldown();
 
         } else if (tgt[0].equals("random")) {

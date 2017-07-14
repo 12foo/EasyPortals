@@ -6,12 +6,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPhysicsEvent;
 
-import javax.sound.sampled.Port;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -242,7 +240,7 @@ public class PortalManager {
         this.portals.put(portalName, new Portal(buildsite.portalCenter, portalName, buildsite.isEW,
                 false, null, null, buildsite.portalBlocks));
         // boom! zoosh
-        player.getWorld().playSound(buildsite.portalCenter, Sound.BLOCK_PORTAL_TRAVEL, 0.5f, new Random().nextFloat() * 0.4F + 0.8F);
+        player.getWorld().playSound(buildsite.portalCenter, Sound.ENTITY_ENDERMEN_TELEPORT, 0.5f, new Random().nextFloat() * 0.4F + 0.8F);
         try { saveConfig(); } catch (IOException ioex) { player.sendMessage(ChatColor.RED + "[!!!] Could not save portal configuration!"); }
         return null;
     }
