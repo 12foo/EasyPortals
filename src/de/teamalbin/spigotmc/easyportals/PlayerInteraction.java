@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
@@ -31,6 +32,14 @@ public class PlayerInteraction implements Listener, CommandExecutor {
                 b.getRelative(-1, 0, 0), b.getRelative(1, 0, 0),
                 b.getRelative(0, -1, 0), b.getRelative(0, 1, 0),
                 b.getRelative(0, 0, -1), b.getRelative(0, 0, 1));
+    }
+
+    @EventHandler
+    public void onCreatureSpawn(CreatureSpawnEvent event) {
+        // don't spawn baddies from our portals
+        if (event.isCancelled()) return;
+        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.NETHER_PORTAL) return;
+        if (portals.manages(event.getLocation().getBlock())) event.setCancelled(true);
     }
 
     @EventHandler
