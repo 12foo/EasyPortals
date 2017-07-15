@@ -293,6 +293,13 @@ public class PortalManager {
         return null;
     }
 
+    public PortalManagerError visitPortal(Player player, String pname) {
+        if (!this.portals.containsKey(pname)) return new PortalManagerError("Portal '" + pname + "' does not exist.");
+        Portal portal = portals.get(pname);
+        portal.visit(player);
+        return null;
+    }
+
     public PortalManagerError destroyPortal(Player player, String pname) {
         if (!this.portals.containsKey(pname)) return new PortalManagerError("Portal '" + pname + "' does not exist.");
         Portal portal = portals.get(pname);

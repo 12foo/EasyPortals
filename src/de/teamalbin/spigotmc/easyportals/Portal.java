@@ -148,6 +148,22 @@ public class Portal {
         return this.niceName() + ChatColor.RED + "[Error] " + ChatColor.RESET + "Portal target is broken.";
     }
 
+    public void visit(Player player) {
+        Block exit = this.location.getBlock();
+        if (this.isEW) {
+            exit = exit.getRelative(0, 0, -2);
+            if (!checkFree(exit)) exit = exit.getRelative(0, 0, 4);
+        } else {
+            exit = exit.getRelative(-2, 0, 0);
+            if (!checkFree(exit)) exit = exit.getRelative(4, 0, 0);
+        }
+        if (!checkFree(exit)) {
+            player.sendMessage("It seems there's no free space around the portal-- please check. Portal location: " + this.location.toVector());
+            return;
+        }
+        player.teleport(exit.getLocation());
+    }
+
     /**
      * Check if a certain block has enough room to teleport a player
      * there without suffocating.

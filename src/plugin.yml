@@ -11,6 +11,7 @@ commands:
       /<command> link <portal-1> <portal-2> -- Links two portals together. Removes previous links.
                  <portal-2> may be "random" or "here" to create a random or point warp.
       /<command> flip <portal> -- Flip the portal exit/walk-out direction.
+      /<command> visit <portal> -- Go to a portal from anywhere in case you need to check it.
       /<command> unlink <portal> -- Breaks the link between the portal and its counterpart.
       /<command> destroy <portal> -- Unlinks and removes a portal.
     description: Creates and manages portals.

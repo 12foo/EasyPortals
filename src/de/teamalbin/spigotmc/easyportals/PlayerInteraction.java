@@ -100,7 +100,6 @@ public class PlayerInteraction implements Listener, CommandExecutor {
         Player player = (Player) commandSender;
         if (!command.getName().equals("portal")) return false;
         if (strings.length == 0) {
-            player.sendMessage(command.getUsage());
             return false;
         }
         switch (strings[0].toLowerCase()) {
@@ -122,10 +121,18 @@ public class PlayerInteraction implements Listener, CommandExecutor {
             break;
             case "flip": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
-                    player.sendMessage("Which portal do you want to flip? /portal unlink <name>");
+                    player.sendMessage("Which portal do you want to flip? /portal visit <name>");
                     return true;
                 }
                 return checkError(player, this.portals.flipPortal(player, strings[1]));
+            }
+            break;
+            case "visit": if (mayPerform(player, "easyportals.build")) {
+                if (strings.length != 2) {
+                    player.sendMessage("Which portal do you want to visit? /portal visit <name>");
+                    return true;
+                }
+                return checkError(player, this.portals.visitPortal(player, strings[1]));
             }
             break;
             case "unlink": if (mayPerform(player, "easyportals.build")) {
