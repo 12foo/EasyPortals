@@ -164,12 +164,27 @@ public class Portal {
         player.teleport(exit.getLocation());
     }
 
+    private boolean isUnsafeBlock(Block check) {
+        if (check.getType() == Material.AIR || check.getType() == Material.WATER || check.getType() == Material.STATIONARY_WATER ||
+                check.getType() == Material.STATIONARY_LAVA || check.getType() == Material.WEB || check.getType() == Material.LAVA ||
+                check.getType() == Material.CACTUS || check.getType() == Material.ENDER_PORTAL || check.getType() == Material.PORTAL)
+            return true;
+        else return false;
+    }
+
     /**
      * Check if a certain block has enough room to teleport a player
-     * there without suffocating.
+     * there without suffocating, and a safe floor below.
      */
     private boolean checkFree(Block b) {
-        return b.getType() == Material.AIR && b.getRelative(BlockFace.UP).getType() == Material.AIR;
+        if (b.getType() != Material.AIR || b.getRelative(BlockFace.UP).getType() != Material.AIR) return false;
+        int down = 0;
+        while (down < 5) {
+            b = b.getRelative(BlockFace.DOWN);
+            if (!isUnsafeBlock(b)) return true;
+            down++;
+        }
+        return false;
     }
 
     public void teleport(Player player) {
@@ -212,12 +227,8 @@ public class Portal {
                 int z = this.location.getBlockZ() + ThreadLocalRandom.current().nextInt(-Portal.randomRange, Portal.randomRange);
                 int y = player.getWorld().getHighestBlockYAt(x, z);
                 Block check = player.getWorld().getBlockAt(x, y-1, z);
-                if (check.getType() == Material.AIR || check.getType() == Material.WATER || check.getType() == Material.STATIONARY_WATER ||
-                        check.getType() == Material.STATIONARY_LAVA || check.getType() == Material.WEB || check.getType() == Material.LAVA ||
-                        check.getType() == Material.CACTUS || check.getType() == Material.ENDER_PORTAL || check.getType() == Material.PORTAL)
-                    continue;
+                if (isUnsafeBlock(check)) continue;
                 player.teleport(check.getRelative(0, 2, 0).getLocation());
-                player.sendMessage("Welcome to the wilds.");
                 this.enableCooldown();
                 return;
             }
