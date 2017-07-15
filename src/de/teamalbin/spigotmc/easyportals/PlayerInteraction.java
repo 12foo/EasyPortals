@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
@@ -90,6 +91,12 @@ public class PlayerInteraction implements Listener, CommandExecutor, TabComplete
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+        Block b = event.getBlock();
+        if (portals.manages(blocksAround(b), b)) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
         Block b = event.getBlock();
         if (portals.manages(blocksAround(b), b)) event.setCancelled(true);
     }
