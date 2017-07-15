@@ -191,13 +191,17 @@ public class PortalManager {
      * Given a block (most usefully a PORTAL block), returns the portal it belongs to
      * if we manage it. Returns null if otherwise (regular nether portals).
      */
-    public Portal findPortalFor(Block b) {
+    public Portal findPortalFor(Block b, int radius) {
         for (Portal p : this.portals.values()) {
             if (p.getLocation().getWorld() != b.getLocation().getWorld()) continue;
-            if (p.getLocation().distance(b.getLocation()) > PROTECTION_RADIUS) continue;
+            if (p.getLocation().distance(b.getLocation()) > radius) continue;
             if (p.getBlocks().contains(b)) return p;
         }
         return null;
+    }
+
+    public Portal findPortalFor(Block b) {
+        return this.findPortalFor(b, PROTECTION_RADIUS);
     }
 
     /**
@@ -253,6 +257,8 @@ public class PortalManager {
      * @param portalName The name of the new portal.
      */
     public PortalManagerError createPortalNear(Player player, String portalName) {
+        if (player.getWorld().getEnvironment() != World.Environment.NORMAL)
+            return new PortalManagerError("You can only create portals in the overworld.");
         if (this.portals.containsKey(portalName)) return new PortalManagerError("A portal with this name already exists.");
         if (portalName.contains(":") || portalName.contains(".")) return new PortalManagerError("Portal names may not include period or colon characters.");
         PortalBuildSite buildsite = this.detectBuildSiteNear(player, 5);

@@ -189,7 +189,11 @@ public class Portal {
 
     public void teleport(Player player) {
         if (this.target == null) return;
-        if (this.cooldown.isAfter(Instant.now())) return;
+        if (this.cooldown.isAfter(Instant.now())) {
+            player.setVelocity(player.getLocation().getDirection().clone().normalize().multiply(-0.5).setY(0));
+            player.sendMessage("This feels... unstable. " + ChatColor.DARK_GRAY + "(portal is in cooldown)");
+            return;
+        }
         String[] tgt = this.target.split(":");
 
         if (this.link != null && tgt[0].equals("portal")) {

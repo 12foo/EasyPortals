@@ -33,7 +33,11 @@ public class PlayerInteraction implements Listener, CommandExecutor, TabComplete
         return Arrays.asList(b,
                 b.getRelative(-1, 0, 0), b.getRelative(1, 0, 0),
                 b.getRelative(0, -1, 0), b.getRelative(0, 1, 0),
-                b.getRelative(0, 0, -1), b.getRelative(0, 0, 1));
+                b.getRelative(0, 0, -1), b.getRelative(0, 0, 1),
+                b.getRelative(-1, 1, 0), b.getRelative(1, 1, 0),
+                b.getRelative(0, 1, -1), b.getRelative(0, 1, 1),
+                b.getRelative(-1, -1, 0), b.getRelative(1, -1, 0),
+                b.getRelative(0, -1, -1), b.getRelative(0, -1, 1));
     }
 
     @EventHandler
