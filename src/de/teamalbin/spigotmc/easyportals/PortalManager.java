@@ -143,7 +143,10 @@ public class PortalManager {
                 rb = traverse.apply(rb, 1);
             }
             if (isInsideBuild(rb)) return null;
-            if (center == null) center = traverse.apply(rb, -Math.round(moved / 2)).getLocation();
+            if (center == null) {
+                if (pblocks.size() == 1) center = pblocks.get(0).getLocation();
+                else center = traverse.apply(rb, -Math.round(moved / 2)).getLocation();
+            }
         }
         if (pblocks.size() < 2) return null; // too small
         PortalBuildSite pbs = new PortalBuildSite();
