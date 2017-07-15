@@ -39,8 +39,9 @@ public class PortalManager {
     private Material portalBlockType = Material.PORTAL;
     private File configFile;
 
-    public PortalManager(NMSInterface nms) {
+    public PortalManager(NMSInterface nms, File configFile) {
         this.nms = nms;
+        this.configFile = configFile;
     }
 
     private void saveConfig() throws IOException {
@@ -56,8 +57,7 @@ public class PortalManager {
         config.save(this.configFile);
     }
 
-    public void loadConfig(File configFile) throws IOException, InvalidConfigurationException {
-        this.configFile = configFile;
+    public void loadConfig() throws IOException, InvalidConfigurationException {
         boolean reloading = false;
         if (!this.portals.isEmpty()) {
             for (Portal p : portals.values()) {

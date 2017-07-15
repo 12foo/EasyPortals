@@ -32,11 +32,11 @@ public class EasyPortals extends JavaPlugin {
                 Bukkit.getPluginManager().disablePlugin(this);
         }
 
-        this.portals = new PortalManager(nms);
 
         try {
             File portalconfig = new File(getDataFolder(), "portals.yml");
-            if (new File(getDataFolder(), "portals.yml").exists()) this.portals.loadConfig(portalconfig);
+            this.portals = new PortalManager(nms, portalconfig);
+            if (new File(getDataFolder(), "portals.yml").exists()) this.portals.loadConfig();
             else {
                 portalconfig.getParentFile().mkdirs();
                 saveResource("portals.yml", false);
