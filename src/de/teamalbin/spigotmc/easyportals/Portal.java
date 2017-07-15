@@ -199,7 +199,7 @@ public class Portal {
             // source and target portal have different orientations -> flip axes
             if (this.isEW != this.link.isEW) { exitDirection = Utilities.rotateVector(exitDirection, 90); }
             // portal is flipped -> flip directions
-            if (this.flipped) { exitDirection.multiply(-1); }
+            if (this.link.flipped) { exitDirection.multiply(-1); }
             if (Math.abs(exitDirection.getX()) > Math.abs(exitDirection.getZ())) exitDirection.setZ(0);
             else exitDirection.setX(0);
             // multiply a little extra because ugh float rounding errors
