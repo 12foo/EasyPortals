@@ -165,7 +165,7 @@ public class Portal {
     }
 
     private boolean isUnsafeBlock(Block check) {
-        if (check.getType() == Material.AIR || check.getType() == Material.WATER || check.getType() == Material.STATIONARY_WATER ||
+        if (check.getType() == Material.WATER || check.getType() == Material.STATIONARY_WATER ||
                 check.getType() == Material.STATIONARY_LAVA || check.getType() == Material.WEB || check.getType() == Material.LAVA ||
                 check.getType() == Material.CACTUS || check.getType() == Material.ENDER_PORTAL || check.getType() == Material.PORTAL)
             return true;
@@ -181,7 +181,7 @@ public class Portal {
         int down = 0;
         while (down < 5) {
             b = b.getRelative(BlockFace.DOWN);
-            if (!isUnsafeBlock(b)) return true;
+            if (b.getType() != Material.AIR && !isUnsafeBlock(b)) return true;
             down++;
         }
         return false;
@@ -191,7 +191,6 @@ public class Portal {
         if (this.target == null) return;
         if (this.cooldown.isAfter(Instant.now())) {
             player.setVelocity(player.getLocation().getDirection().clone().normalize().multiply(-0.5).setY(0));
-            player.sendMessage("This feels... unstable. " + ChatColor.DARK_GRAY + "(portal is in cooldown)");
             return;
         }
         String[] tgt = this.target.split(":");
@@ -201,15 +200,17 @@ public class Portal {
             Vector exitDirection = player.getLocation().getDirection().clone();
 
             // source and target portal have different orientations -> flip axes
-            if (this.isEW != this.link.isEW) { exitDirection = Utilities.rotateVector(exitDirection, 90); }
+            if (this.isEW != this.link.isEW) { exitDirection = new Vector(exitDirection.getZ(), 0, exitDirection.getX()); }
             // portal is flipped -> flip directions
             if (this.link.flipped) { exitDirection.multiply(-1); }
             if (Math.abs(exitDirection.getX()) > Math.abs(exitDirection.getZ())) exitDirection.setZ(0);
             else exitDirection.setX(0);
             // multiply a little extra because ugh float rounding errors
-            exitDirection.normalize().setY(0).multiply(1.01);
+            exitDirection.normalize().setY(0).multiply(1.1);
 
-            Block exit = this.link.location.clone().add(exitDirection).getBlock();
+            Block exit = this.link.location.getBlock()
+                    .getRelative((int) Math.round(exitDirection.getX()), 0, (int) Math.round(exitDirection.getZ()))
+                    .getRelative((int) Math.round(exitDirection.getX()), 0, (int) Math.round(exitDirection.getZ()));
             if (!this.checkFree(exit)) {
                 player.setVelocity(player.getLocation().getDirection().clone().normalize().multiply(-0.7).setY(0));
                 player.sendMessage("Something is blocking the other side...");
@@ -220,7 +221,7 @@ public class Portal {
             Location tport = exit.getLocation();
             tport.setDirection(exitDirection);
             player.teleport(tport);
-            player.setVelocity(tport.getDirection().normalize().multiply(0.7));
+            player.setVelocity(exitDirection.multiply(0.6));
             this.enableCooldown();
 
         } else if (tgt[0].equals("random")) {
@@ -231,7 +232,7 @@ public class Portal {
                 int z = this.location.getBlockZ() + ThreadLocalRandom.current().nextInt(-Portal.randomRange, Portal.randomRange);
                 int y = player.getWorld().getHighestBlockYAt(x, z);
                 Block check = player.getWorld().getBlockAt(x, y-1, z);
-                if (isUnsafeBlock(check)) continue;
+                if (check.getType() == Material.AIR || isUnsafeBlock(check)) continue;
                 player.teleport(check.getRelative(0, 2, 0).getLocation());
                 this.enableCooldown();
                 return;

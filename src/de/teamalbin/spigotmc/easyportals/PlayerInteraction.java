@@ -17,8 +17,10 @@ import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,9 +63,17 @@ public class PlayerInteraction implements Listener, CommandExecutor, TabComplete
         if (portals.manages(event.getEntity().getLocation().getBlock())) event.setCancelled(true);
     }
 
+    // prevent players who have recently touched a portal from entering the nether by mistake
+    private HashMap<String, Instant> netherProtect = new HashMap<>();
+
     @EventHandler
     public void onPlayerPortal(PlayerPortalEvent event) {
         if (event.isCancelled()) return;
+        if (netherProtect.containsKey(event.getPlayer().getName()) &&
+                netherProtect.get(event.getPlayer().getName()).isAfter(Instant.now())) {
+            event.setCancelled(true);
+            return;
+        }
         if (portals.manages(blocksAround(event.getFrom().getBlock()), event.getFrom().getBlock())) event.setCancelled(true);
     }
 
@@ -73,6 +83,7 @@ public class PlayerInteraction implements Listener, CommandExecutor, TabComplete
         Player player = (Player) event.getEntity();
         Portal portal = portals.findPortalFor(event.getLocation().getBlock());
         if (portal != null) {
+            netherProtect.put(player.getName(), Instant.now().plusSeconds(7));
             portal.teleport(player);
         }
     }
