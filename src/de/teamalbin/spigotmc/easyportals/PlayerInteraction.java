@@ -2,10 +2,10 @@ package de.teamalbin.spigotmc.easyportals;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,10 +17,12 @@ import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class PlayerInteraction implements Listener, CommandExecutor {
+public class PlayerInteraction implements Listener, CommandExecutor, TabCompleter {
     private PortalManager portals;
 
     public PlayerInteraction(PortalManager portals) {
@@ -82,6 +84,24 @@ public class PlayerInteraction implements Listener, CommandExecutor {
         if (portals.manages(event.blockList(), event.getLocation().getBlock())) event.setCancelled(true);
     }
 
+    private static final List<String> completableCommands = Arrays.asList("create", "list", "link", "flip", "visit", "unlink", "destroy");
+
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String alias, String[] strings) {
+        if (!command.getName().equals("portal")) return null;
+        if (!commandSender.hasPermission("easyportals.build")) return null;
+        if (strings.length == 1) return PlayerInteraction.completableCommands.stream()
+                .filter(cp -> cp.startsWith(strings[0])).collect(Collectors.toList());
+        if (strings.length > 1) {
+            ArrayList<String> portalNames = this.portals.getNames();
+            if (strings.length == 2) return portalNames.stream().filter(cp -> cp.startsWith(strings[1])).collect(Collectors.toList());
+            portalNames.add("random");
+            portalNames.add("here");
+            if (strings.length == 3) return portalNames.stream().filter(cp -> cp.startsWith(strings[2])).collect(Collectors.toList());
+        }
+        return null;
+    }
+
     private boolean mayPerform(Player player, String permission) {
         if (player.hasPermission(permission)) return true;
         player.sendMessage(ChatColor.RED + "Sorry, you may not perform that command. Missing permission: " + ChatColor.RESET + permission);
@@ -109,52 +129,45 @@ public class PlayerInteraction implements Listener, CommandExecutor {
                     return true;
                 }
                 return checkError(player, this.portals.createPortalNear(player, strings[1]));
-            }
-            break;
+            } else return true;
             case "link": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 3) {
                     player.sendMessage("What do you want to link? Try /portal link <p1> <p2>, or /portal link <p1> random.");
                     return true;
                 }
                 return checkError(player, this.portals.linkPortals(player, strings[1], strings[2]));
-            }
-            break;
+            } else return true;
             case "flip": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
                     player.sendMessage("Which portal do you want to flip? /portal visit <name>");
                     return true;
                 }
                 return checkError(player, this.portals.flipPortal(player, strings[1]));
-            }
-            break;
+            } else return true;
             case "visit": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
                     player.sendMessage("Which portal do you want to visit? /portal visit <name>");
                     return true;
                 }
                 return checkError(player, this.portals.visitPortal(player, strings[1]));
-            }
-            break;
+            } else return true;
             case "unlink": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
                     player.sendMessage("Which portal do you want to unlink? /portal unlink <name>");
                     return true;
                 }
                 return checkError(player, this.portals.unlinkPortal(player, strings[1]));
-            }
-            break;
+            } else return true;
             case "destroy": if (mayPerform(player, "easyportals.build")) {
                 if (strings.length != 2) {
                     player.sendMessage("Which portal do you want to destroy? /portal destroy <name>");
                     return true;
                 }
                 return checkError(player, this.portals.destroyPortal(player, strings[1]));
-            }
-            break;
+            } else return true;
             case "list": if (mayPerform(player, "easyportals.build")) {
                 return checkError(player, this.portals.list(player));
-            }
-            break;
+            } else return true;
         }
         player.sendMessage(ChatColor.RED + "Sorry, that's not a known command.");
         return false;

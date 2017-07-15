@@ -231,6 +231,10 @@ public class PortalManager {
         return false;
     }
 
+    public ArrayList<String> getNames() {
+        return new ArrayList<>(Arrays.asList(this.portals.keySet().toArray(new String[this.portals.keySet().size()])));
+    }
+
     /**
      * Creates a portal near the specified player, as long as a portal building site
      * is within 5 blocks of the player. A portal building site is either:

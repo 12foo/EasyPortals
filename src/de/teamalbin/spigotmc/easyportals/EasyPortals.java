@@ -4,7 +4,6 @@ import de.teamalbin.spigotmc.easyportals.nms.NMSInterface;
 import de.teamalbin.spigotmc.easyportals.nms.NMSInterface_1_12;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -52,7 +51,9 @@ public class EasyPortals extends JavaPlugin {
         }
 
         this.interaction = new PlayerInteraction(this.portals);
+        this.getCommand("portal").setPermission("easyportals.build");
         this.getCommand("portal").setExecutor(this.interaction);
-        getServer().getPluginManager().registerEvents(this.interaction, this);
+        this.getCommand("portal").setTabCompleter(this.interaction);
+        this.getServer().getPluginManager().registerEvents(this.interaction, this);
     }
 }
