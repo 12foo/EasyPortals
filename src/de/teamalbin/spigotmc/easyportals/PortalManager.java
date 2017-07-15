@@ -77,7 +77,7 @@ public class PortalManager {
             Location ploc = cp.getVector("location").toLocation(w);
             boolean isEW = cp.getBoolean("is_east_west");
             PortalBuildSite pbs = findPortalBlocks(ploc.getBlock(), (isEW ? traverseEW : traverseNS));
-            if (pbs == null) throw new InvalidConfigurationException("Could not rebuild portal '" + pname + "' from configuration!");
+            if (pbs == null) throw new InvalidConfigurationException("Could not rebuild portal '" + pname + "' from configuration! Check the build. Location is: " + ploc.toVector());
             Portal p = new Portal(ploc, pname, isEW, cp.getBoolean("flipped"), cp.getString("target"), null, pbs.portalBlocks);
             portals.put(pname, p);
             nms.massSetBlockType(pbs.portalBlocks, (byte)(isEW ? 0 : 2), Material.PORTAL);
@@ -131,6 +131,9 @@ public class PortalManager {
             // mark free blocks above for next ranges
             rb = traverse.apply(rb, 1);
             while (isInsideBuild(rb) && moved < PROTECTION_RADIUS) {
+                // there shouldn't be air blocks below the center line unless the build markers
+                // weren't on the ground
+                if (center == null && rb.getRelative(BlockFace.DOWN).getType() == Material.AIR) break;
                 if (!haveRange && isInsideBuild(rb.getRelative(BlockFace.UP))) {
                     haveRange = true;
                     ranges.push(rb.getRelative(BlockFace.UP));
@@ -142,6 +145,7 @@ public class PortalManager {
             if (isInsideBuild(rb)) return null;
             if (center == null) center = traverse.apply(rb, -Math.round(moved / 2)).getLocation();
         }
+        if (pblocks.size() < 2) return null; // too small
         PortalBuildSite pbs = new PortalBuildSite();
         pbs.portalBlocks = pblocks;
         pbs.portalCenter = center;
@@ -149,30 +153,32 @@ public class PortalManager {
     }
 
     private PortalBuildSite detectBuildSiteNear(Player player, int distance) {
-        scan: for (Block b : new Utilities.BlockScan(player.getLocation(), distance)) {
+        for (Block b : new Utilities.BlockScan(player.getLocation(), distance)) {
+            // maybe add column-type portals...
             if (b.getType() == buildMarker) {
-                if (b.getRelative(BlockFace.DOWN).getType() == buildMarker || b.getRelative(BlockFace.UP).getType() == buildMarker) {
-                    // might be a column-type portal site
-                } else {
-                    // might be a regular portal site
-                    Material frame = b.getRelative(BlockFace.DOWN).getType();
-                    if (frame == Material.AIR) continue;
-                    // probe if the portal is supposed to go east/west or north/south
-                    boolean isEW = false;
-                    boolean isNS = false;
-                    if (b.getRelative(BlockFace.EAST).getType() == buildMarker || b.getRelative(BlockFace.WEST).getType() == buildMarker) isEW = true;
-                    if (b.getRelative(BlockFace.NORTH).getType() == buildMarker || b.getRelative(BlockFace.SOUTH).getType() == buildMarker) isNS = true;
-                    if ((isNS && isEW) || (!isNS && !isEW)) continue; // both or neither? makes no sense
-
-                    // now that we know the direction, we can traverse the portal 2-dimensionally and find the blocks
-                    PortalBuildSite pbs = findPortalBlocks(b, isEW ? traverseEW : traverseNS);
-                    if (pbs == null) continue scan;
-
-                    // found something!
-                    pbs.isColumn = false;
-                    pbs.isEW = isEW;
-                    return pbs;
+                // might be a regular portal site
+                Material frame = b.getRelative(BlockFace.DOWN).getType();
+                if (frame == Material.AIR) continue;
+                // probe if the portal is supposed to go east/west or north/south
+                boolean isEW = false;
+                boolean isNS = false;
+                if (b.getRelative(BlockFace.EAST).getType() == buildMarker || b.getRelative(BlockFace.WEST).getType() == buildMarker) isEW = true;
+                if (b.getRelative(BlockFace.NORTH).getType() == buildMarker || b.getRelative(BlockFace.SOUTH).getType() == buildMarker) isNS = true;
+                // for portals with a 1-block center, check the sides for frame blocks
+                if (!isEW && !isNS) {
+                    if (b.getRelative(BlockFace.EAST).getType() != Material.AIR && b.getRelative(BlockFace.WEST).getType() != Material.AIR) isEW = true;
+                    if (b.getRelative(BlockFace.NORTH).getType() != Material.AIR && b.getRelative(BlockFace.SOUTH).getType() != Material.AIR) isNS = true;
                 }
+                if ((isNS && isEW) || (!isNS && !isEW)) continue; // both or neither? makes no sense
+
+                // now that we know the direction, we can traverse the portal 2-dimensionally and find the blocks
+                PortalBuildSite pbs = findPortalBlocks(b, isEW ? traverseEW : traverseNS);
+                if (pbs == null) continue;
+
+                // found something!
+                pbs.isColumn = false;
+                pbs.isEW = isEW;
+                return pbs;
             }
         }
         return null;
@@ -241,6 +247,7 @@ public class PortalManager {
      */
     public PortalManagerError createPortalNear(Player player, String portalName) {
         if (this.portals.containsKey(portalName)) return new PortalManagerError("A portal with this name already exists.");
+        if (portalName.contains(":") || portalName.contains(".")) return new PortalManagerError("Portal names may not include period or colon characters.");
         PortalBuildSite buildsite = this.detectBuildSiteNear(player, 5);
         if (buildsite == null) return new PortalManagerError("Could not detect a suitable portal site within 5 blocks. Please check the user guide.");
         nms.massSetBlockType(buildsite.portalBlocks, (byte)(buildsite.isEW ? 0 : 2), Material.PORTAL);

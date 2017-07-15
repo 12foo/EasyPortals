@@ -222,6 +222,7 @@ public class Portal {
 
             } catch (NumberFormatException nfex) {
                 player.sendMessage("Something about this portal feels wrong... " + ChatColor.DARK_GRAY +  "(misconfigured portal)");
+                this.enableCooldown();
             }
         }
     }
